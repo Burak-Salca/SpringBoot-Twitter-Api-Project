@@ -1,6 +1,7 @@
 package com.example.SpringBoot_Twitter_Api_Project.controller;
 
 import com.example.SpringBoot_Twitter_Api_Project.entity.User;
+import com.example.SpringBoot_Twitter_Api_Project.exception.TwitterException;
 import com.example.SpringBoot_Twitter_Api_Project.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,7 @@ public class UserController {
         if (isAuthenticated) {
             return ResponseEntity.ok("Login successful");
         } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
+            throw new TwitterException("Invalid credentials", HttpStatus.UNAUTHORIZED);
         }
     }
 }
