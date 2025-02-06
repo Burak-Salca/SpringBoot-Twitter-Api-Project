@@ -11,8 +11,5 @@ import java.util.Optional;
 @Repository
 public interface LikeRepository extends JpaRepository<Like, Long> {
 
-    Long countByTweetId(Long tweetId);
-    Boolean existsByUserIdAndTweetId(Long userId, Long tweetId);
-
     Optional<Like> findByUserAndTweet(User user, Tweet tweet);
 }

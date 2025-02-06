@@ -1,5 +1,8 @@
+package com.example.SpringBoot_Twitter_Api_Project.controller;
+
 import com.example.SpringBoot_Twitter_Api_Project.entity.Tweet;
 import com.example.SpringBoot_Twitter_Api_Project.service.TweetService;
+import org.apache.tomcat.util.net.openssl.ciphers.Authentication;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,8 +37,8 @@ public class TweetController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteTweet(@PathVariable Long id, @RequestParam Long userId) {
-        tweetService.deleteTweet(id, userId);
-        return new ResponseEntity<>("Tweet successfully deleted.", HttpStatus.OK);
+    public  ResponseEntity<String> deleteTweet(@PathVariable Long id, @RequestParam Long userId) {
+        tweetService.deleteTweet(id,userId);
+        return new ResponseEntity<>("Comment successfully deleted.", HttpStatus.OK);
     }
 }

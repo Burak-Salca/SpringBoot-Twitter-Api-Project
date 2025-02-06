@@ -12,7 +12,5 @@ import java.util.Optional;
 @Repository
 public interface RetweetRepository extends JpaRepository<Retweet, Long> {
 
-    List<Retweet> findByUserId(Long userId);
-
     Optional<Retweet> findByUserAndTweet(User user, Tweet tweet);
 }

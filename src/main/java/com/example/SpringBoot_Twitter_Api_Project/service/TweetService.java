@@ -25,11 +25,6 @@ public class TweetService {
         return tweetRepository.save(tweet);
     }
 
-    public List<Tweet> findByUserId(Long userId) {
-        userService.findUserById(userId);
-        return tweetRepository.findByUserId(userId);
-    }
-
     public Tweet findById(Long tweetId) {
         return tweetRepository.findById(tweetId)
                 .orElseThrow(() -> new TwitterException("Tweet not found with id: " + tweetId, HttpStatus.NOT_FOUND));
@@ -50,9 +45,5 @@ public class TweetService {
             throw new TwitterException("You are not authorized to delete this tweet.", HttpStatus.FORBIDDEN);
         }
         tweetRepository.delete(tweet);
-    }
-
-    public List<Tweet> getTweetsByUserId(Long userId) {
-        return null;
     }
 }
