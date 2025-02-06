@@ -1,10 +1,7 @@
 package com.example.SpringBoot_Twitter_Api_Project.controller;
 
 import com.example.SpringBoot_Twitter_Api_Project.entity.User;
-import com.example.SpringBoot_Twitter_Api_Project.exception.TwitterException;
 import com.example.SpringBoot_Twitter_Api_Project.service.UserService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,18 +15,12 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody User user) {
-        User savedUser = userService.register(user);
-        return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
+    public User register(@RequestBody User user) {
+        return userService.register(user);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody User user) {
-        boolean isAuthenticated = userService.authenticate(user.getUsername(), user.getPassword());
-        if (isAuthenticated) {
-            return ResponseEntity.ok("Login successful");
-        } else {
-            throw new TwitterException("Invalid credentials", HttpStatus.UNAUTHORIZED);
-        }
+    public String login(@RequestBody User user) {
+        return userService.authenticate(user.getUsername(), user.getPassword());
     }
 }

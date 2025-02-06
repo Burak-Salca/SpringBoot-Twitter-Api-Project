@@ -21,33 +21,38 @@ public class CommentService {
         this.userService = userService;
     }
 
-    public Comment addComment(Long tweetId, Long userId, Comment commentRequest) {
+    private void validateCommentOwner(Comment comment, String username) {
+        if (!comment.getUser().getUsername().equals(username)) {
+            throw new TwitterException("You are not authorized to modify this comment.", HttpStatus.FORBIDDEN);
+        }
+    }
+
+    public Comment addComment(Long tweetId, String username, Comment commentRequest) {
         Tweet tweet = tweetService.findById(tweetId);
-        User user = userService.findUserById(userId);
+        User user = userService.findUserByUsername(username);
+        if (user == null) {
+            throw new TwitterException("User not found.", HttpStatus.NOT_FOUND);
+        }
 
-        Comment comment = new Comment();
-        comment.setContent(commentRequest.getContent());
-        comment.setUser(user);
-        comment.setTweet(tweet);
-
-        return commentRepository.save(comment);
-    }
-
-    public void deleteComment(Long commentId) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new TwitterException("Comment not found with id: " + commentId, HttpStatus.NOT_FOUND));
-        commentRepository.delete(comment);
-    }
-
-    public Comment updateComment(Long commentId, String newContent) {
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new TwitterException("Comment not found with id: " + commentId, HttpStatus.NOT_FOUND));
-        comment.setContent(newContent);
+        Comment comment = new Comment(commentRequest.getContent(), user, tweet);
         return commentRepository.save(comment);
     }
 
     public Comment findById(Long id) {
         return commentRepository.findById(id)
                 .orElseThrow(() -> new TwitterException("Comment not found with id: " + id, HttpStatus.NOT_FOUND));
+    }
+
+    public Comment updateComment(Long commentId, String newContent, String username) {
+        Comment comment = findById(commentId);
+        validateCommentOwner(comment, username);
+        comment.setContent(newContent);
+        return commentRepository.save(comment);
+    }
+
+    public void deleteComment(Long commentId, String username) {
+        Comment comment = findById(commentId);
+        validateCommentOwner(comment, username);
+        commentRepository.delete(comment);
     }
 }

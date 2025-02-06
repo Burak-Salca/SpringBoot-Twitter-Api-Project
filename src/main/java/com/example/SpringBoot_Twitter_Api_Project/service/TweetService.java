@@ -18,9 +18,18 @@ public class TweetService {
         this.userService = userService;
     }
 
-    public Tweet createTweet(Long userId, String content) {
-        User user = userService.findUserById(userId);
-        Tweet tweet = new Tweet(content,user);
+    private void validateTweetOwner(Tweet tweet, String username) {
+        if (!tweet.getUser().getUsername().equals(username)) {
+            throw new TwitterException("You are not authorized to modify this tweet.", HttpStatus.FORBIDDEN);
+        }
+    }
+
+    public Tweet createTweet(String username, String content) {
+        User user = userService.findUserByUsername(username);
+        if (user == null) {
+            throw new TwitterException("User not found.", HttpStatus.NOT_FOUND);
+        }
+        Tweet tweet = new Tweet(content, user);
         return tweetRepository.save(tweet);
     }
 
@@ -29,14 +38,16 @@ public class TweetService {
                 .orElseThrow(() -> new TwitterException("Tweet not found with id: " + tweetId, HttpStatus.NOT_FOUND));
     }
 
-    public Tweet updateTweet(Long tweetId, String newContent) {
+    public Tweet updateTweet(Long tweetId, String newContent, String username) {
         Tweet tweet = findById(tweetId);
+        validateTweetOwner(tweet, username);
         tweet.setContent(newContent);
         return tweetRepository.save(tweet);
     }
 
-    public void deleteTweet(Long tweetId) {
+    public void deleteTweet(Long tweetId, String username) {
         Tweet tweet = findById(tweetId);
+        validateTweetOwner(tweet, username);
         tweetRepository.delete(tweet);
     }
 }

@@ -39,9 +39,11 @@ public class RetweetService {
         return retweetRepository.save(retweet);
     }
 
-    public void deleteRetweet(Long retweetId) {
-        Retweet retweet = retweetRepository.findById(retweetId)
-                .orElseThrow(() -> new TwitterException("Retweet not found with id: " + retweetId, HttpStatus.NOT_FOUND));
+    public void deleteRetweet(Long retweetId, String username) {
+        Retweet retweet = findById(retweetId);
+        if (!retweet.getUser().getUsername().equals(username)) {
+            throw new TwitterException("You are not authorized to delete this retweet.", HttpStatus.FORBIDDEN);
+        }
         retweetRepository.delete(retweet);
     }
 

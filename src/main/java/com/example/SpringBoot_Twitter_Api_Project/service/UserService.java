@@ -8,7 +8,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserService  {
+public class UserService {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -16,6 +16,16 @@ public class UserService  {
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = new BCryptPasswordEncoder();
+    }
+
+    public User findUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new TwitterException("User not found with id: " + userId, HttpStatus.NOT_FOUND));
+    }
+
+    public User findUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new TwitterException("User not found with this username: " + username, HttpStatus.NOT_FOUND));
     }
 
     public User register(User user) {
@@ -26,19 +36,15 @@ public class UserService  {
         return userRepository.save(user);
     }
 
-    public boolean authenticate(String username, String password) {
-        return userRepository.findByUsername(username)
+    public String authenticate(String username, String password) {
+        boolean isAuthenticated = userRepository.findByUsername(username)
                 .map(user -> passwordEncoder.matches(password, user.getPassword()))
                 .orElse(false);
-    }
 
-    public User findUserById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new TwitterException("User not found with id: " + userId, HttpStatus.NOT_FOUND));
-    }
-
-    public User findUserByUsername(String userName) {
-        return userRepository.findByUsername(userName)
-                .orElseThrow(()-> new TwitterException("User not found with this username: " + userName, HttpStatus.NOT_FOUND));
+        if (isAuthenticated) {
+            return "Login successful";
+        } else {
+            throw new TwitterException("Invalid credentials", HttpStatus.UNAUTHORIZED);
+        }
     }
 }
