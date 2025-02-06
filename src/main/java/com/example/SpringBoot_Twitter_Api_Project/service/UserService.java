@@ -37,4 +37,8 @@ public class UserService  {
                 .orElseThrow(() -> new TwitterException("User not found with id: " + userId, HttpStatus.NOT_FOUND));
     }
 
+    public User findUserByUsername(String userName) {
+        return userRepository.findByUsername(userName)
+                .orElseThrow(()-> new TwitterException("User not found with this username: " + userName, HttpStatus.NOT_FOUND));
+    }
 }

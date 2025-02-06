@@ -33,25 +33,21 @@ public class CommentService {
         return commentRepository.save(comment);
     }
 
-    public void deleteComment(Long commentId, Long userId) {
+    public void deleteComment(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new TwitterException("Comment not found with id: " + commentId, HttpStatus.NOT_FOUND));
-
-        if (!comment.getUser().getId().equals(userId) && !comment.getTweet().getUser().getId().equals(userId)) {
-            throw new TwitterException("You are not authorized to delete this comment.", HttpStatus.FORBIDDEN);
-        }
         commentRepository.delete(comment);
     }
 
-    public Comment updateComment(Long commentId, Long userId, String newContent) {
+    public Comment updateComment(Long commentId, String newContent) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new TwitterException("Comment not found with id: " + commentId, HttpStatus.NOT_FOUND));
-
-        if (!comment.getUser().getId().equals(userId)) {
-            throw new TwitterException("You are not authorized to update this comment.", HttpStatus.FORBIDDEN);
-        }
-
         comment.setContent(newContent);
         return commentRepository.save(comment);
+    }
+
+    public Comment findById(Long id) {
+        return commentRepository.findById(id)
+                .orElseThrow(() -> new TwitterException("Comment not found with id: " + id, HttpStatus.NOT_FOUND));
     }
 }

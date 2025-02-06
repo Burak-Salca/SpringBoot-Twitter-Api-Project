@@ -6,7 +6,6 @@ import com.example.SpringBoot_Twitter_Api_Project.exception.TwitterException;
 import com.example.SpringBoot_Twitter_Api_Project.repository.TweetRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import java.util.List;
 
 @Service
 public class TweetService {
@@ -30,20 +29,14 @@ public class TweetService {
                 .orElseThrow(() -> new TwitterException("Tweet not found with id: " + tweetId, HttpStatus.NOT_FOUND));
     }
 
-    public Tweet updateTweet(Long tweetId, Long userId, String newContent) {
+    public Tweet updateTweet(Long tweetId, String newContent) {
         Tweet tweet = findById(tweetId);
-        if (!tweet.getUser().getId().equals(userId)) {
-            throw new TwitterException("You are not authorized to update this tweet.", HttpStatus.FORBIDDEN);
-        }
         tweet.setContent(newContent);
         return tweetRepository.save(tweet);
     }
 
-    public void deleteTweet(Long tweetId, Long userId) {
+    public void deleteTweet(Long tweetId) {
         Tweet tweet = findById(tweetId);
-        if (!tweet.getUser().getId().equals(userId)) {
-            throw new TwitterException("You are not authorized to delete this tweet.", HttpStatus.FORBIDDEN);
-        }
         tweetRepository.delete(tweet);
     }
 }
