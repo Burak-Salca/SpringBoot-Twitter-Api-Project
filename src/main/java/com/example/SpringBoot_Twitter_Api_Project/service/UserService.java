@@ -1,21 +1,33 @@
 package com.example.SpringBoot_Twitter_Api_Project.service;
 
+import com.example.SpringBoot_Twitter_Api_Project.dto.RegisterRequest;
 import com.example.SpringBoot_Twitter_Api_Project.entity.User;
 import com.example.SpringBoot_Twitter_Api_Project.exception.TwitterException;
 import com.example.SpringBoot_Twitter_Api_Project.repository.UserRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import com.example.SpringBoot_Twitter_Api_Project.dto.LoginRequest;
+import com.example.SpringBoot_Twitter_Api_Project.dto.LoginResponse;
 
 @Service
+@Transactional
 public class UserService {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, 
+                      PasswordEncoder passwordEncoder,
+                      JwtService jwtService) {
         this.userRepository = userRepository;
-        this.passwordEncoder = new BCryptPasswordEncoder();
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     public User findUserById(Long userId) {
@@ -28,23 +40,34 @@ public class UserService {
                 .orElseThrow(() -> new TwitterException("User not found with this username: " + username, HttpStatus.NOT_FOUND));
     }
 
-    public User register(User user) {
-        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-            throw new TwitterException("Username already taken", HttpStatus.BAD_REQUEST);
+    public ResponseEntity<?> register(RegisterRequest request) {
+        if (userRepository.existsByUsername(request.getUsername())) {
+            return ResponseEntity
+                .badRequest()
+                .body("Bu kullanıcı adı zaten kullanılıyor!");
         }
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        return userRepository.save(user);
+
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        
+        userRepository.save(user);
+        
+        return ResponseEntity.ok("Kullanıcı başarıyla kaydedildi!");
     }
 
-    public String authenticate(String username, String password) {
-        boolean isAuthenticated = userRepository.findByUsername(username)
-                .map(user -> passwordEncoder.matches(password, user.getPassword()))
-                .orElse(false);
+    public ResponseEntity<?> login(LoginRequest request) {
+        User user = userRepository.findByUsername(request.getUsername())
+            .orElseThrow(() -> new UsernameNotFoundException("Kullanıcı bulunamadı"));
 
-        if (isAuthenticated) {
-            return "Login successful";
-        } else {
-            throw new TwitterException("Invalid credentials", HttpStatus.UNAUTHORIZED);
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            return ResponseEntity
+                .badRequest()
+                .body("Geçersiz şifre!");
         }
+
+        String token = jwtService.generateToken(user);
+
+        return ResponseEntity.ok(new LoginResponse(token, user.getUsername()));
     }
 }
