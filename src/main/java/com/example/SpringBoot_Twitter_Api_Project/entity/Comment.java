@@ -1,15 +1,15 @@
 package com.example.SpringBoot_Twitter_Api_Project.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "comments")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
+@Setter
 public class Comment {
 
     @Id
@@ -32,4 +32,5 @@ public class Comment {
         this.user=user;
         this.tweet=tweet;
     }
+
 }
