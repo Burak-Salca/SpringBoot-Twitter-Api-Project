@@ -4,6 +4,7 @@ import com.example.SpringBoot_Twitter_Api_Project.dto.RegisterRequest;
 import com.example.SpringBoot_Twitter_Api_Project.entity.User;
 import com.example.SpringBoot_Twitter_Api_Project.exception.TwitterException;
 import com.example.SpringBoot_Twitter_Api_Project.repository.UserRepository;
+import com.example.SpringBoot_Twitter_Api_Project.security.JwtService;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -66,7 +67,7 @@ public class UserService {
                 .body("Geçersiz şifre!");
         }
 
-        String token = jwtService.generateToken(user);
+        String token = jwtService.generateToken(user.getUsername());
 
         return ResponseEntity.ok(new LoginResponse(token, user.getUsername()));
     }
