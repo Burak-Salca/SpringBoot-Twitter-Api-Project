@@ -15,10 +15,10 @@ public class RetweetController {
         this.retweetService = retweetService;
     }
 
-    @PostMapping("/{tweetId}/{userId}")
+    /*@PostMapping("/{tweetId}/{userId}")
     public Retweet addRetweet(@PathVariable Long tweetId, @PathVariable Long userId) {
         return retweetService.addRetweet(tweetId, userId);
-    }
+    }*/
 
     @DeleteMapping("/{id}")
     public String deleteRetweet(@PathVariable Long id, Authentication authentication) {

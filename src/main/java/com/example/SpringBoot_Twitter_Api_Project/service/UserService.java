@@ -2,73 +2,58 @@ package com.example.SpringBoot_Twitter_Api_Project.service;
 
 import com.example.SpringBoot_Twitter_Api_Project.dto.RegisterRequest;
 import com.example.SpringBoot_Twitter_Api_Project.entity.User;
-import com.example.SpringBoot_Twitter_Api_Project.exception.TwitterException;
+import com.example.SpringBoot_Twitter_Api_Project.exception.TweeterException;
 import com.example.SpringBoot_Twitter_Api_Project.repository.UserRepository;
-import com.example.SpringBoot_Twitter_Api_Project.security.JwtService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import com.example.SpringBoot_Twitter_Api_Project.dto.LoginRequest;
-import com.example.SpringBoot_Twitter_Api_Project.dto.LoginResponse;
 
 @Service
 @Transactional
-public class UserService {
+public class UserService implements UserDetailsService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
 
-    public UserService(UserRepository userRepository, 
-                      PasswordEncoder passwordEncoder,
-                      JwtService jwtService) {
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
     }
 
-    public User findUserById(Long userId) {
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new TwitterException("User not found with id: " + userId, HttpStatus.NOT_FOUND));
-    }
-
-    public User findUserByUsername(String username) {
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new TwitterException("User not found with this username: " + username, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new TweeterException("User not found with this username: " + username, HttpStatus.NOT_FOUND));
     }
 
-    public ResponseEntity<?> register(RegisterRequest request) {
-        if (userRepository.existsByUsername(request.getUsername())) {
-            return ResponseEntity
-                .badRequest()
-                .body("Bu kullanıcı adı zaten kullanılıyor!");
-        }
+
+    public ResponseEntity<?> register(@Valid RegisterRequest request) {
+        String encodedPassword = passwordEncoder.encode(request.getPassword());
 
         User user = new User();
         user.setUsername(request.getUsername());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        
+        user.setPassword(encodedPassword);
         userRepository.save(user);
-        
-        return ResponseEntity.ok("Kullanıcı başarıyla kaydedildi!");
+
+        return ResponseEntity.ok("User registered successfully");
     }
 
-    public ResponseEntity<?> login(LoginRequest request) {
+    public ResponseEntity<?> login(@Valid LoginRequest request) {
         User user = userRepository.findByUsername(request.getUsername())
-            .orElseThrow(() -> new UsernameNotFoundException("Kullanıcı bulunamadı"));
-
+                .orElseThrow(() -> new TweeterException("Username or password is wrong: ", HttpStatus.BAD_REQUEST));
+        
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            return ResponseEntity
-                .badRequest()
-                .body("Geçersiz şifre!");
+            throw new TweeterException("Username or password is wrong: ", HttpStatus.BAD_REQUEST);
         }
 
-        String token = jwtService.generateToken(user.getUsername());
-
-        return ResponseEntity.ok(new LoginResponse(token, user.getUsername()));
+        return ResponseEntity.ok("User login successfully");
     }
 }

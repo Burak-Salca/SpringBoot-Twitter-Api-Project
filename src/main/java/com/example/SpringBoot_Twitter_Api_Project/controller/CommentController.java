@@ -15,10 +15,10 @@ public class CommentController {
         this.commentService = commentService;
     }
 
-    @PostMapping("/")
+    /*@PostMapping("/")
     public Comment addComment(@RequestParam Long tweetId, Authentication authentication, @RequestBody Comment commentRequest) {
         return commentService.addComment(tweetId, authentication.getName(), commentRequest);
-    }
+    }*/
 
     @PutMapping("/{id}")
     public Comment updateComment(@PathVariable Long id, @RequestBody String newContent, Authentication authentication) {

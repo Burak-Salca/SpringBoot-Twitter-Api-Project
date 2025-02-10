@@ -22,7 +22,7 @@ public class SwaggerConfig {
 
     @Bean
     public OpenAPI customOpenAPI() {
-        final String securitySchemeName = "bearerAuth";
+        final String securitySchemeName = "basicAuth";
         
         return new OpenAPI()
                 .addSecurityItem(new SecurityRequirement()
@@ -32,11 +32,10 @@ public class SwaggerConfig {
                                 new SecurityScheme()
                                         .name(securitySchemeName)
                                         .type(SecurityScheme.Type.HTTP)
-                                        .scheme("bearer")
-                                        .bearerFormat("JWT")))
+                                        .scheme("basic")))
                 .info(new Info()
                         .title("Twitter API")
-                        .description("Twitter Clone REST API")
+                        .description("Twitter Clone REST API - Basic Auth")
                         .version("1.0"));
     }
 }

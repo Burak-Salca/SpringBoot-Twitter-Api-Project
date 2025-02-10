@@ -1,5 +1,7 @@
 package com.example.SpringBoot_Twitter_Api_Project.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -34,8 +36,4 @@ public class Tweet {
     @OneToMany(mappedBy = "tweet", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Retweet> retweets;
 
-    public Tweet(String content, User user) {
-        this.content=content;
-        this.user=user;
-    }
 }

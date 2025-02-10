@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TwitterErrorResponse {
+public class TweeterErrorResponse {
 
     private Integer status;
     private String message;

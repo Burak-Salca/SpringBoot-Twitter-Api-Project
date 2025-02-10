@@ -6,11 +6,11 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @Setter
-public class TwitterException extends RuntimeException {
+public class TweeterException extends RuntimeException {
 
     private HttpStatus httpStatus;
 
-    public TwitterException(String message, HttpStatus httpStatus) {
+    public TweeterException(String message, HttpStatus httpStatus) {
         super(message);
         this.httpStatus = httpStatus;
     }
