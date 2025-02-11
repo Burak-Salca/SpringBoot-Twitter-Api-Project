@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import com.example.SpringBoot_Twitter_Api_Project.dto.LoginRequest;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -55,5 +56,9 @@ public class UserService implements UserDetailsService {
         }
 
         return ResponseEntity.ok("User login successfully");
+    }
+
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 }

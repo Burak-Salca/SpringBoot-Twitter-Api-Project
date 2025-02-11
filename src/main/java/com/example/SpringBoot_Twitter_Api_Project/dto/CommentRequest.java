@@ -8,9 +8,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CommentDTO {
-    private Long id;
+public class CommentRequest {
     @Size(min = 1, max = 280, message = "Comment 1-280 karakter arasında olmalıdır")
     private String content;
-    private UserDTO user;
-}
+} 

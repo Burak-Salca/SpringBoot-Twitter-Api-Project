@@ -92,7 +92,7 @@ public class TweetService {
     public List<TweetDTO> getTweetsByUserId(Long userId) {
         // Önce kullanıcının var olup olmadığını kontrol et
         userRepository.findById(userId)
-                .orElseThrow(() -> new TweeterException("Kullanıcı bulunamadı: " + userId, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new TweeterException("User not found: " + userId, HttpStatus.NOT_FOUND));
 
         // Kullanıcının tweetlerini getir
         List<Tweet> tweets = tweetRepository.findByUserId(userId);
@@ -105,7 +105,7 @@ public class TweetService {
 
     public User findByUserName(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new TweeterException("Tweet güncellemek için giriş yapmalısınız", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new TweeterException("You are not authorization for this action", HttpStatus.NOT_FOUND));
     }
 
     public Tweet findById(Long tweetId) {

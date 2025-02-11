@@ -1,6 +1,10 @@
 package com.example.SpringBoot_Twitter_Api_Project.service;
 
+import com.example.SpringBoot_Twitter_Api_Project.dto.CommentDTO;
+import com.example.SpringBoot_Twitter_Api_Project.dto.UserDTO;
 import com.example.SpringBoot_Twitter_Api_Project.entity.Comment;
+import com.example.SpringBoot_Twitter_Api_Project.entity.Tweet;
+import com.example.SpringBoot_Twitter_Api_Project.entity.User;
 import com.example.SpringBoot_Twitter_Api_Project.exception.TweeterException;
 import com.example.SpringBoot_Twitter_Api_Project.repository.CommentRepository;
 import org.springframework.http.HttpStatus;
@@ -25,32 +29,77 @@ public class CommentService {
         }
     }
 
-   /* public Comment addComment(Long tweetId, String username, Comment) {
+    public CommentDTO createComment(Long tweetId, String username, String content) {
+        // Tweet'in var olup olmadığını kontrol et
         Tweet tweet = tweetService.findById(tweetId);
-        User user = userService.loadUserByUsername(username);
-        if (user == null) {
-            throw new TweeterException("User not found.", HttpStatus.NOT_FOUND);
-        }
+        
+        // Kullanıcının var olup olmadığını kontrol et
+        User user = userService.findByUsername(username)
+                .orElseThrow(() -> new TweeterException("User not found.", HttpStatus.NOT_FOUND));
 
-        Comment comment = new Comment(commentRequest.getContent(), user, tweet);
-        return commentRepository.save(comment);
-    }*/
+        // Yeni comment oluştur
+        Comment comment = new Comment();
+        comment.setContent(content);
+        comment.setUser(user);
+        comment.setTweet(tweet);
+        
+        // Comment'i kaydet
+        Comment savedComment = commentRepository.save(comment);
+        
+        // DTO'ya dönüştür ve geri dön
+        return convertToDTO(savedComment);
+    }
 
     public Comment findById(Long id) {
         return commentRepository.findById(id)
                 .orElseThrow(() -> new TweeterException("Comment not found with id: " + id, HttpStatus.NOT_FOUND));
     }
 
-    public Comment updateComment(Long commentId, String newContent, String username) {
+    public CommentDTO updateComment(Long commentId, String newContent, String username) {
+        // Yorumu bul
         Comment comment = findById(commentId);
-        validateCommentOwner(comment, username);
+        
+        // Yorum sahibi kontrolü
+        if (!comment.getUser().getUsername().equals(username)) {
+            throw new TweeterException("You are not authorized to modify this comment.", HttpStatus.FORBIDDEN);
+        }
+        
+        // Yorumu güncelle
         comment.setContent(newContent);
-        return commentRepository.save(comment);
+        Comment updatedComment = commentRepository.save(comment);
+        
+        // DTO'ya dönüştür ve geri dön
+        return convertToDTO(updatedComment);
     }
 
     public void deleteComment(Long commentId, String username) {
+        // Yorumu bul
         Comment comment = findById(commentId);
-        validateCommentOwner(comment, username);
+        
+        // Tweet sahibini ve yorum sahibini kontrol et
+        boolean isCommentOwner = comment.getUser().getUsername().equals(username);
+        boolean isTweetOwner = comment.getTweet().getUser().getUsername().equals(username);
+        
+        // Eğer ne yorum sahibi ne de tweet sahibi değilse hata fırlat
+        if (!isCommentOwner && !isTweetOwner) {
+            throw new TweeterException("You are not authorized to delete this comment. Only comment owner or tweet owner can delete.",
+                HttpStatus.FORBIDDEN);
+        }
+        
+        // Yorumu sil
         commentRepository.delete(comment);
+    }
+
+    private CommentDTO convertToDTO(Comment comment) {
+        CommentDTO dto = new CommentDTO();
+        dto.setId(comment.getId());
+        dto.setContent(comment.getContent());
+
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(comment.getUser().getId());
+        userDTO.setUsername(comment.getUser().getUsername());
+        dto.setUser(userDTO);
+
+        return dto;
     }
 }
