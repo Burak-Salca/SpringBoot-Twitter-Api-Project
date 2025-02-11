@@ -11,5 +11,7 @@ import java.util.Optional;
 @Repository
 public interface LikeRepository extends JpaRepository<Like, Long> {
 
+    boolean existsByUserAndTweetAndIsLikedTrue(User user, Tweet tweet);
+
     Optional<Like> findByUserAndTweet(User user, Tweet tweet);
 }

@@ -1,9 +1,11 @@
 package com.example.SpringBoot_Twitter_Api_Project.controller;
 
+import com.example.SpringBoot_Twitter_Api_Project.dto.LikeDTO;
 import com.example.SpringBoot_Twitter_Api_Project.entity.Like;
 import com.example.SpringBoot_Twitter_Api_Project.service.LikeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -15,15 +17,15 @@ public class LikeController {
         this.likeService = likeService;
     }
 
-    @PostMapping
-    public ResponseEntity<Like> likeTweet(@PathVariable Long userId, @PathVariable Long tweetId) {
-        Like likedTweet = likeService.addlike(userId, tweetId);
-        return new ResponseEntity<>(likedTweet, HttpStatus.CREATED);
+    @PostMapping("/{tweetId}")
+    public ResponseEntity<LikeDTO> likeTweet(@PathVariable Long tweetId, Authentication authentication) {
+        LikeDTO likedTweet = likeService.addLike(tweetId, authentication.getName());
+        return ResponseEntity.status(HttpStatus.CREATED).body(likedTweet);
     }
 
-    @PostMapping("/dislike")
-    public ResponseEntity<String> dislikeTweet(@RequestParam Long tweetId, @RequestParam Long userId) {
-        likeService.removeLike(tweetId, userId);
-        return new ResponseEntity<>("Like removed successfully.", HttpStatus.OK);
+    @DeleteMapping("/{tweetId}")
+    public ResponseEntity<LikeDTO> dislikeTweet(@PathVariable Long tweetId, Authentication authentication) {
+        LikeDTO dislikedTweet = likeService.removeLike(tweetId, authentication.getName());
+        return ResponseEntity.ok(dislikedTweet);
     }
 }

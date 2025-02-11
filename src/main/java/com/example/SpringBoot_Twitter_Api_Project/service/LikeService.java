@@ -1,5 +1,7 @@
 package com.example.SpringBoot_Twitter_Api_Project.service;
 
+import com.example.SpringBoot_Twitter_Api_Project.dto.LikeDTO;
+import com.example.SpringBoot_Twitter_Api_Project.dto.UserDTO;
 import com.example.SpringBoot_Twitter_Api_Project.entity.Like;
 import com.example.SpringBoot_Twitter_Api_Project.entity.Tweet;
 import com.example.SpringBoot_Twitter_Api_Project.entity.User;
@@ -18,43 +20,95 @@ public class LikeService {
     private final LikeRepository likeRepository;
     private final UserRepository userRepository;
     private final TweetRepository tweetRepository;
+    private final TweetService tweetService;
+    private final UserService userService;
 
-    public LikeService(LikeRepository likeRepository, UserRepository userRepository, TweetRepository tweetRepository) {
+    public LikeService(LikeRepository likeRepository, UserRepository userRepository, TweetRepository tweetRepository, TweetService tweetService, UserService userService) {
         this.likeRepository = likeRepository;
         this.userRepository = userRepository;
         this.tweetRepository = tweetRepository;
+        this.tweetService = tweetService;
+        this.userService = userService;
     }
 
-    public Like addlike(Long userId, Long tweetId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new TweeterException("User not found", HttpStatus.NOT_FOUND));
-
-        Tweet tweet = tweetRepository.findById(tweetId)
-                .orElseThrow(() -> new TweeterException("Tweet not found", HttpStatus.NOT_FOUND));
-
+    public LikeDTO addLike(Long tweetId, String username) {
+        // Tweet'in var olup olmadığını kontrol et
+        Tweet tweet = tweetService.findById(tweetId);
+        
+        // Kullanıcının var olup olmadığını kontrol et
+        User user = userService.findByUsername(username)
+                .orElseThrow(() -> new TweeterException("Kullanıcı bulunamadı.", HttpStatus.NOT_FOUND));
+        
+        // Önce mevcut like kaydını kontrol et
         Optional<Like> existingLike = likeRepository.findByUserAndTweet(user, tweet);
+        
         if (existingLike.isPresent()) {
-            throw new TweeterException("User already liked this tweet", HttpStatus.BAD_REQUEST);
+            Like like = existingLike.get();
+            if (like.getIsLiked()) {
+                throw new TweeterException("Bu tweet'i zaten beğenmişsiniz.", HttpStatus.BAD_REQUEST);
+            } else {
+                // Daha önce dislike yapılmış, tekrar like yapılabilir
+                like.setIsLiked(true);
+                Like updatedLike = likeRepository.save(like);
+                return convertToDTO(updatedLike);
+            }
         }
 
+        // Yeni like oluştur
         Like like = new Like();
         like.setUser(user);
         like.setTweet(tweet);
         like.setIsLiked(true);
-
-        return likeRepository.save(like);
+        
+        // Like'ı kaydet
+        Like savedLike = likeRepository.save(like);
+        
+        // DTO'ya dönüştür ve geri dön
+        return convertToDTO(savedLike);
     }
 
-    public void removeLike(Long userId, Long tweetId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new TweeterException("User not found", HttpStatus.NOT_FOUND));
+    public LikeDTO removeLike(Long tweetId, String username) {
+        // Tweet'in var olup olmadığını kontrol et
+        Tweet tweet = tweetService.findById(tweetId);
 
-        Tweet tweet = tweetRepository.findById(tweetId)
-                .orElseThrow(() -> new TweeterException("Tweet not found", HttpStatus.NOT_FOUND));
-
+        // Kullanıcının var olup olmadığını kontrol et
+        User user = userService.findByUsername(username)
+                .orElseThrow(() -> new TweeterException("user not found.", HttpStatus.NOT_FOUND));
+        
+        // Kullanıcının tweet'i beğenip beğenmediğini kontrol et
         Like like = likeRepository.findByUserAndTweet(user, tweet)
-                .orElseThrow(() -> new TweeterException("Like not found", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new TweeterException("Bu tweet'i henüz beğenmemişsiniz.", HttpStatus.BAD_REQUEST));
+        
+        // Like'ın aktif olup olmadığını kontrol et
+        if (!like.getIsLiked()) {
+            throw new TweeterException("Bu tweet'i zaten beğenmemişsiniz.", HttpStatus.BAD_REQUEST);
+        }
+        
+        // Like'ın sahibi olup olmadığını kontrol et
+        if (!like.getUser().getUsername().equals(username)) {
+            throw new TweeterException("Başkasının beğenisini silemezsiniz.", HttpStatus.FORBIDDEN);
+        }
+        
+        // Like'ı false yap
+        like.setIsLiked(false);
+        Like updatedLike = likeRepository.save(like);
+        
+        // DTO'ya dönüştür ve geri dön
+        return convertToDTO(updatedLike);
+    }
 
-        likeRepository.delete(like);
+    private LikeDTO convertToDTO(Like like) {
+        LikeDTO dto = new LikeDTO();
+        dto.setId(like.getId());
+
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(like.getUser().getId());
+        userDTO.setUsername(like.getUser().getUsername());
+        dto.setUser(userDTO);
+
+        dto.setTweetId(like.getTweet().getId());
+        dto.setIsLiked(like.getIsLiked());
+
+        return dto;
     }
 }

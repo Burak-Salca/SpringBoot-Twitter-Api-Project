@@ -23,12 +23,6 @@ public class CommentService {
         this.userService = userService;
     }
 
-    private void validateCommentOwner(Comment comment, String username) {
-        if (!comment.getUser().getUsername().equals(username)) {
-            throw new TweeterException("You are not authorized to modify this comment.", HttpStatus.FORBIDDEN);
-        }
-    }
-
     public CommentDTO createComment(Long tweetId, String username, String content) {
         // Tweet'in var olup olmadığını kontrol et
         Tweet tweet = tweetService.findById(tweetId);
@@ -48,11 +42,6 @@ public class CommentService {
         
         // DTO'ya dönüştür ve geri dön
         return convertToDTO(savedComment);
-    }
-
-    public Comment findById(Long id) {
-        return commentRepository.findById(id)
-                .orElseThrow(() -> new TweeterException("Comment not found with id: " + id, HttpStatus.NOT_FOUND));
     }
 
     public CommentDTO updateComment(Long commentId, String newContent, String username) {
@@ -88,6 +77,11 @@ public class CommentService {
         
         // Yorumu sil
         commentRepository.delete(comment);
+    }
+
+    public Comment findById(Long id) {
+        return commentRepository.findById(id)
+                .orElseThrow(() -> new TweeterException("Comment not found with id: " + id, HttpStatus.NOT_FOUND));
     }
 
     private CommentDTO convertToDTO(Comment comment) {

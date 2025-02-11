@@ -10,4 +10,6 @@ import lombok.NoArgsConstructor;
 public class LikeDTO {
     private Long id;
     private UserDTO user;
+    private Long tweetId;
+    private Boolean isLiked;
 }
