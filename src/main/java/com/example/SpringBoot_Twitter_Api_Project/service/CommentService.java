@@ -81,7 +81,7 @@ public class CommentService {
 
     public Comment findById(Long id) {
         return commentRepository.findById(id)
-                .orElseThrow(() -> new TweeterException("Comment not found with id: " + id, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new TweeterException("Comment not found: " + id, HttpStatus.NOT_FOUND));
     }
 
     private CommentDTO convertToDTO(Comment comment) {

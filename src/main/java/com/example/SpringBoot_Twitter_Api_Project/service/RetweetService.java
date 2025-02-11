@@ -5,6 +5,10 @@ import com.example.SpringBoot_Twitter_Api_Project.exception.TweeterException;
 import com.example.SpringBoot_Twitter_Api_Project.repository.RetweetRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import com.example.SpringBoot_Twitter_Api_Project.dto.RetweetDTO;
+import com.example.SpringBoot_Twitter_Api_Project.dto.UserDTO;
+import com.example.SpringBoot_Twitter_Api_Project.entity.Tweet;
+import com.example.SpringBoot_Twitter_Api_Project.entity.User;
 
 @Service
 public class RetweetService {
@@ -19,33 +23,63 @@ public class RetweetService {
         this.userService = userService;
     }
 
-    /*public Retweet addRetweet(Long tweetId, Long userId) {
+    public RetweetDTO addRetweet(Long tweetId, String username) {
+        // Tweet'in var olup olmadığını kontrol et
         Tweet tweet = tweetService.findById(tweetId);
-        User user = userService.findUserById(userId);
+        
+        // Kullanıcının var olup olmadığını kontrol et
+        User user = userService.findByUsername(username)
+                .orElseThrow(() -> new TweeterException("User not found.", HttpStatus.NOT_FOUND));
 
-        if (tweet.getUser().getId().equals(userId)) {
+        // Kullanıcının kendi tweet'ini retweet etmesini engelle
+        if (tweet.getUser().getUsername().equals(username)) {
             throw new TweeterException("You cannot retweet your own tweet.", HttpStatus.BAD_REQUEST);
         }
 
-        Optional<Retweet> existingRetweet = retweetRepository.findByUserAndTweet(user, tweet);
-        if (existingRetweet.isPresent()) {
+        // Daha önce retweet yapılıp yapılmadığını kontrol et
+        if (retweetRepository.existsByUserAndTweet(user, tweet)) {
             throw new TweeterException("You have already retweeted this tweet.", HttpStatus.BAD_REQUEST);
         }
 
-        Retweet retweet = new Retweet(user, tweet);
-        return retweetRepository.save(retweet);
-    }*/
+        // Yeni retweet oluştur
+        Retweet retweet = new Retweet();
+        retweet.setUser(user);
+        retweet.setTweet(tweet);
+        
+        // Retweet'i kaydet
+        Retweet savedRetweet = retweetRepository.save(retweet);
+        
+        // DTO'ya dönüştür ve geri dön
+        return convertToDTO(savedRetweet);
+    }
 
     public void deleteRetweet(Long retweetId, String username) {
         Retweet retweet = findById(retweetId);
+        
+        // Retweet'in sahibi olup olmadığını kontrol et
         if (!retweet.getUser().getUsername().equals(username)) {
             throw new TweeterException("You are not authorized to delete this retweet.", HttpStatus.FORBIDDEN);
         }
+        
         retweetRepository.delete(retweet);
     }
 
-    public Retweet findById(Long id) {
+    private Retweet findById(Long id) {
         return retweetRepository.findById(id)
-                .orElseThrow(() -> new TweeterException("Retweet not found with id: " + id, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new TweeterException("Retweet not found: " + id, HttpStatus.NOT_FOUND));
+    }
+
+    private RetweetDTO convertToDTO(Retweet retweet) {
+        RetweetDTO dto = new RetweetDTO();
+        dto.setId(retweet.getId());
+        
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId(retweet.getUser().getId());
+        userDTO.setUsername(retweet.getUser().getUsername());
+        dto.setUser(userDTO);
+        
+        dto.setTweetId(retweet.getTweet().getId());
+        
+        return dto;
     }
 }

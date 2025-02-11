@@ -111,7 +111,6 @@ public class TweetService {
     public Tweet findById(Long tweetId) {
         return tweetRepository.findById(tweetId)
                 .orElseThrow(() -> new TweeterException("Tweet not found with id: " + tweetId, HttpStatus.NOT_FOUND));
-
     }
 
     private TweetDTO convertToDTO(Tweet tweet) {
@@ -166,7 +165,5 @@ public class TweetService {
 
         return tweetDTO;
     }
-
-
 
 }

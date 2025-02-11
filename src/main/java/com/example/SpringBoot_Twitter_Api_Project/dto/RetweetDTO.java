@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class RetweetDTO {
     private Long id;
     private UserDTO user;
+    private Long tweetId;
 }

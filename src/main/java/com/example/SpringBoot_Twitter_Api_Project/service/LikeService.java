@@ -37,7 +37,7 @@ public class LikeService {
         
         // Kullanıcının var olup olmadığını kontrol et
         User user = userService.findByUsername(username)
-                .orElseThrow(() -> new TweeterException("Kullanıcı bulunamadı.", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new TweeterException("User not found.", HttpStatus.NOT_FOUND));
         
         // Önce mevcut like kaydını kontrol et
         Optional<Like> existingLike = likeRepository.findByUserAndTweet(user, tweet);
@@ -45,7 +45,7 @@ public class LikeService {
         if (existingLike.isPresent()) {
             Like like = existingLike.get();
             if (like.getIsLiked()) {
-                throw new TweeterException("Bu tweet'i zaten beğenmişsiniz.", HttpStatus.BAD_REQUEST);
+                throw new TweeterException("You have already liked this tweet.", HttpStatus.BAD_REQUEST);
             } else {
                 // Daha önce dislike yapılmış, tekrar like yapılabilir
                 like.setIsLiked(true);
@@ -73,20 +73,20 @@ public class LikeService {
 
         // Kullanıcının var olup olmadığını kontrol et
         User user = userService.findByUsername(username)
-                .orElseThrow(() -> new TweeterException("user not found.", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new TweeterException("User not found.", HttpStatus.NOT_FOUND));
         
         // Kullanıcının tweet'i beğenip beğenmediğini kontrol et
         Like like = likeRepository.findByUserAndTweet(user, tweet)
-                .orElseThrow(() -> new TweeterException("Bu tweet'i henüz beğenmemişsiniz.", HttpStatus.BAD_REQUEST));
+                .orElseThrow(() -> new TweeterException("You haven't liked this tweet yet.", HttpStatus.BAD_REQUEST));
         
         // Like'ın aktif olup olmadığını kontrol et
         if (!like.getIsLiked()) {
-            throw new TweeterException("Bu tweet'i zaten beğenmemişsiniz.", HttpStatus.BAD_REQUEST);
+            throw new TweeterException("You have already unliked this tweet.", HttpStatus.BAD_REQUEST);
         }
         
         // Like'ın sahibi olup olmadığını kontrol et
         if (!like.getUser().getUsername().equals(username)) {
-            throw new TweeterException("Başkasının beğenisini silemezsiniz.", HttpStatus.FORBIDDEN);
+            throw new TweeterException("You are not authorized to remove this like.", HttpStatus.FORBIDDEN);
         }
         
         // Like'ı false yap
