@@ -28,7 +28,7 @@ public class TweetService {
     }
 
     @Transactional
-    public ResponseEntity<?> createTweet(String content, String username) {
+    public TweetDTO createTweet(String content, String username) {
         // Kullanıcı kontrolü
         User user = findByUserName(username);
 
@@ -38,12 +38,13 @@ public class TweetService {
         tweet.setUser(user);
 
         //Tweeti kaydet
-        tweetRepository.save(tweet);
+        Tweet savedTweet = tweetRepository.save(tweet);
 
-        return ResponseEntity.ok("Tweet created\n" + tweet.getContent());
+        // DTO'ya dönüştür ve geri dön
+        return convertToDTO(savedTweet);
     }
 
-    public ResponseEntity<?> updateTweet(Long tweetId, String newContent, String username) {
+    public TweetDTO updateTweet(Long tweetId, String newContent, String username) {
         // Kullanıcı kontrolü
         User user = findByUserName(username);
 
@@ -60,9 +61,9 @@ public class TweetService {
         tweet.setContent(newContent);
 
         //Güncellenmiş tweeti veri tabanına kaydet
-        tweetRepository.save(tweet);
+        Tweet updatedTweet = tweetRepository.save(tweet);
         
-        return ResponseEntity.ok("Tweet updated\n" + tweet.getContent());
+        return convertToDTO(updatedTweet);
     }
 
     public ResponseEntity<?> deleteTweet(Long tweetId, String username) {
