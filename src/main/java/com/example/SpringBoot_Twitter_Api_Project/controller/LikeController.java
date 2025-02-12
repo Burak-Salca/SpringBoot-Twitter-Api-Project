@@ -24,8 +24,8 @@ public class LikeController {
     }
 
     @DeleteMapping("/{tweetId}")
-    public ResponseEntity<LikeDTO> dislikeTweet(@PathVariable Long tweetId, Authentication authentication) {
+    public ResponseEntity<String> dislikeTweet(@PathVariable Long tweetId, Authentication authentication) {
         LikeDTO dislikedTweet = likeService.removeLike(tweetId, authentication.getName());
-        return ResponseEntity.ok(dislikedTweet);
+        return ResponseEntity.ok("Like successfully deleted.");
     }
 }

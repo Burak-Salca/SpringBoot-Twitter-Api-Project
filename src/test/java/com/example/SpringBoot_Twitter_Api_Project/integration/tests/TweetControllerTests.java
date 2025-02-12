@@ -16,6 +16,9 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Arrays;
+
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -51,7 +54,7 @@ class TweetControllerTests {
     @Test
     @DisplayName("Create Tweet - Success")
     @WithMockUser(username = "testUser")
-    void createTweet_Success() throws Exception {
+    void createTweet() throws Exception {
         given(tweetService.createTweet(anyString(), anyString()))
                 .willReturn(tweetDTO);
 
@@ -65,8 +68,7 @@ class TweetControllerTests {
 
     @Test
     @DisplayName("Get Tweet By Id - Success")
-    @WithMockUser(username = "testUser") 
-    void getTweetById_Success() throws Exception {
+    void getTweetById() throws Exception {
         given(tweetService.getByIdTweet(1L)).willReturn(tweetDTO);
 
         mockMvc.perform(get("/tweets/1"))
@@ -76,11 +78,24 @@ class TweetControllerTests {
     }
 
     @Test
+    @DisplayName("Get Tweets By User Id - Success")
+    void getTweetsByUserId() throws Exception {
+        given(tweetService.getTweetsByUserId(1L))
+                .willReturn(Arrays.asList(tweetDTO));
+
+        mockMvc.perform(get("/tweets/user/{userId}", 1L))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id", is(1)))
+                .andExpect(jsonPath("$[0].content", is("Test tweet")));
+    }
+
+    @Test
     @DisplayName("Delete Tweet - Success")
     @WithMockUser(username = "testUser")
-    void deleteTweet_Success() throws Exception {
+    void deleteTweet() throws Exception {
         mockMvc.perform(delete("/tweets/1")
-                        .with(SecurityMockMvcRequestPostProcessors.csrf()))  // CSRF token eklendi
+                        .with(SecurityMockMvcRequestPostProcessors.csrf()))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Tweet successfully deleted."));
     }
@@ -88,7 +103,7 @@ class TweetControllerTests {
     @Test
     @DisplayName("Update Tweet - Success")
     @WithMockUser(username = "testUser")
-    void updateTweet_Success() throws Exception {
+    void updateTweet() throws Exception {
         given(tweetService.updateTweet(any(), any(), any())).willReturn(tweetDTO);
 
         mockMvc.perform(put("/tweets/1")

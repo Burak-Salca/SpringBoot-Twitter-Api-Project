@@ -27,6 +27,6 @@ public class RetweetController {
     @DeleteMapping("/{retweetId}")
     public ResponseEntity<String> deleteRetweet(@PathVariable Long retweetId, Authentication authentication) {
         retweetService.deleteRetweet(retweetId, authentication.getName());
-        return ResponseEntity.ok("Retweet başarıyla silindi.");
+        return ResponseEntity.ok("Retweet successfully deleted.");
     }
 }

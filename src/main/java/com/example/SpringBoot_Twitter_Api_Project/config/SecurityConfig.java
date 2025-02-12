@@ -2,6 +2,7 @@ package com.example.SpringBoot_Twitter_Api_Project.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -40,8 +41,8 @@ public class SecurityConfig {
                     // Public endpoints (giriş gerektirmeyen)
                     auth.requestMatchers("/user/**").permitAll();
                     auth.requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll();
-                    auth.requestMatchers("/tweets/findById/**").permitAll();
-                    auth.requestMatchers("/tweets/getTweetsByUserId/**").permitAll();
+                    auth.requestMatchers(HttpMethod.GET, "/tweets/**").permitAll() ;
+                    auth.requestMatchers("/tweets/user/{userId}/**").permitAll();
                     
                     // Protected endpoints (giriş gerektiren)
                     auth.requestMatchers("/tweets/createTweet").authenticated();
