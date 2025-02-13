@@ -39,7 +39,6 @@ public class TweeterGlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<String> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        // İlk validation hatasının mesajını al
         String errorMessage = ex.getBindingResult()
                 .getFieldErrors()
                 .get(0)
