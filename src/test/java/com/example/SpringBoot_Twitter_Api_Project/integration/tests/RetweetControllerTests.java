@@ -41,7 +41,6 @@ class RetweetControllerTests {
     private ObjectMapper objectMapper;
 
     private RetweetDTO retweetDTO;
-    private TweetDTO tweetDTO;
     private UserDTO userDTO;
 
     @BeforeEach
@@ -52,15 +51,9 @@ class RetweetControllerTests {
         userDTO.setUsername("testuser");
 
 
-        tweetDTO = new TweetDTO();
-        tweetDTO.setId(1L);
-        tweetDTO.setContent("Original tweet");
-        tweetDTO.setUser(userDTO);
-
-
         retweetDTO = new RetweetDTO();
         retweetDTO.setId(1L);
-        retweetDTO.setTweetId(tweetDTO.getId());
+        retweetDTO.setTweetId(1L);
         retweetDTO.setUser(userDTO);
     }
 
@@ -77,9 +70,8 @@ class RetweetControllerTests {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id", is(1)))
                 .andExpect(jsonPath("$.user.username", is("testuser")))
-                .andExpect(jsonPath("$.tweet.content", is("Original tweet")));
+                .andExpect(jsonPath("$.tweetId", is(1)));
     }
-
 
     @Test
     @DisplayName("Delete Retweet - Success")
@@ -105,4 +97,5 @@ class RetweetControllerTests {
         mockMvc.perform(delete("/retweet/{retweetId}", 1L))
                 .andExpect(status().isUnauthorized());
     }
+
 }

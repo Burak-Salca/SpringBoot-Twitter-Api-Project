@@ -1,7 +1,6 @@
 package com.example.SpringBoot_Twitter_Api_Project.integration.tests;
 
-import com.example.SpringBoot_Twitter_Api_Project.config.SecurityConfig;
-import com.example.SpringBoot_Twitter_Api_Project.controller.CommentController;
+
 import com.example.SpringBoot_Twitter_Api_Project.dto.CommentRequest;
 import com.example.SpringBoot_Twitter_Api_Project.dto.CommentDTO;
 import com.example.SpringBoot_Twitter_Api_Project.dto.UserDTO;
@@ -11,14 +10,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
+
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 
-import java.util.Arrays;
+
 
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -28,8 +29,8 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@WebMvcTest(controllers = CommentController.class)
-@Import(SecurityConfig.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 class CommentControllerTests {
 
     @Autowired
@@ -69,19 +70,14 @@ class CommentControllerTests {
         mockMvc.perform(post("/comments/{tweetId}", 1L)
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(createRequest)))
+                        .content(objectMapper.writeValueAsString(new CommentRequest("Test comment"))))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.content", is(createRequest.getContent())));
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.content", is("Test comment")))
+                .andExpect(jsonPath("$.user.username", is("testuser")));
     }
 
-    @Test
-    @DisplayName("Create Comment - Unauthorized")
-    void createComment_Unauthorized() throws Exception {
-        mockMvc.perform(post("/comments/tweet/{tweetId}", 1L)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(createRequest)))
-                .andExpect(status().isUnauthorized());
-    }
+
 
     @Test
     @DisplayName("Update Comment - Success")
@@ -95,7 +91,9 @@ class CommentControllerTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content", is(commentDTO.getContent())));
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.content", is("Test comment")))
+                .andExpect(jsonPath("$.user.username", is("testuser")));
     }
 
     @Test
@@ -106,5 +104,21 @@ class CommentControllerTests {
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(content().string("Comment successfully deleted."));
+    }
+
+    @Test
+    @DisplayName("Create Comment - Unauthorized")
+    void createComment_Unauthorized() throws Exception {
+        mockMvc.perform(post("/comments/{tweetId}", 1L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Delete Comment - Unauthorized")
+    void deleteComment_Unauthorized() throws Exception {
+        mockMvc.perform(delete("/comments/{commentId}", 1L))
+                .andExpect(status().isUnauthorized());
     }
 }

@@ -68,6 +68,7 @@ class TweetControllerTests {
 
     @Test
     @DisplayName("Get Tweet By Id - Success")
+    @WithMockUser(username = "testUser")
     void getTweetById() throws Exception {
         given(tweetService.getByIdTweet(1L)).willReturn(tweetDTO);
 
@@ -77,8 +78,10 @@ class TweetControllerTests {
                 .andExpect(jsonPath("$.content", is("Test tweet")));
     }
 
+
     @Test
     @DisplayName("Get Tweets By User Id - Success")
+    @WithMockUser(username = "testUser")
     void getTweetsByUserId() throws Exception {
         given(tweetService.getTweetsByUserId(1L))
                 .willReturn(Arrays.asList(tweetDTO));
